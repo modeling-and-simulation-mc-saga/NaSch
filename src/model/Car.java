@@ -24,11 +24,11 @@ public class Car {
     }
 
     public int evalSpeed(int headway) {
-        speed = Math.min(maxSpeed, speed + 1);
-        speed = Math.min(speed, headway - 1);
-        if (Math.random() < decelerationProbability) {
-            speed = Math.max(0, speed - 1);
-        }
+
+
+
+
+
         return speed;
     }
 
