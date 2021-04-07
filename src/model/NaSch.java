@@ -3,8 +3,10 @@ package model;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import myLib.utils.Utils;
 
 /**
@@ -17,9 +19,11 @@ public class NaSch {
     private int maxSpeed;
     private int numCars;
     private List<Car> carList;
+    private final Random random;
 
     public NaSch(int sysSize, int numCars, int maxSpeed,
-            double decelerationProbability) {
+            double decelerationProbability, Random random) {
+        this.random = random;
         if (sysSize < numCars) {
             throw new IllegalArgumentException();
         }
@@ -38,18 +42,41 @@ public class NaSch {
         carList = Utils.createList();
         for (int i = 0; i < numCars; i++) {
             int x = i;
-            carList.add(new Car(maxSpeed, decelerationProbability, x, 0));
+            carList.add(new Car(maxSpeed, decelerationProbability, x, 0, random));
         }
     }
 
     public void randomInitialize() {
         carList = Utils.createList();
-        int randomList[] = Utils.createRandomNumberList(sysSize, numCars);
+        int randomList[] = createRandomPosition(sysSize, numCars);
         Arrays.sort(randomList);
         for (int i = 0; i < randomList.length; i++) {
             carList.add(new Car(maxSpeed, decelerationProbability,
-                    randomList[i], 0));
+                    randomList[i], 0, random));
         }
+    }
+
+    /**
+     * generate n random numbers in [0,nCell) Each random numbers appears once.
+     *
+     * @param nCell
+     * @param n
+     * @return
+     */
+    private int[] createRandomPosition(int nCell, int n) {
+        List<Integer> list = new ArrayList<>();
+        for (int i = 0; i < nCell; i++) {
+            list.add(i);
+        }
+        int count = 0;
+        int c[] = new int[n];
+        while (count < n) {
+            int k = random.nextInt(list.size());
+            int x = list.remove(k);
+            c[count] = x;
+            count++;
+        }
+        return c;
     }
 
     public void initialize(int[] speeds) {
@@ -58,7 +85,7 @@ public class NaSch {
         for (int i = 0; i < Math.min(speeds.length, sysSize); i++) {
             if (speeds[i] >= 0) {
                 Car car = new Car(maxSpeed, decelerationProbability,
-                        i, speeds[i]);
+                        i, speeds[i], random);
                 carList.add(car);
                 count++;
             }
@@ -71,7 +98,7 @@ public class NaSch {
         int s = (int) ((double) sysSize / numCars);
         for (int i = 0; i < numCars; i++) {
             int x = i * s;
-            Car car = new Car(maxSpeed, decelerationProbability, x, s);
+            Car car = new Car(maxSpeed, decelerationProbability, x, s, random);
             carList.add(car);
         }
     }
@@ -84,9 +111,7 @@ public class NaSch {
             headway = (headway + sysSize) % sysSize;
             carList.get(i).evalSpeed(headway);
         }
-        carList.stream().forEach((car) -> {
-            car.move(sysSize);
-        });
+        carList.forEach(car -> car.move(sysSize));
     }
 
     /**
@@ -164,7 +189,8 @@ public class NaSch {
         int numCars = 15;
         int vmax = 5;
         double decelerationProbability = 0.1;
-        NaSch sys = new NaSch(sysSize, numCars, vmax, decelerationProbability);
+        NaSch sys = new NaSch(sysSize, numCars, vmax, decelerationProbability,
+                new Random(48L));
         sys.randomInitialize();
         String filename = "NSch-4.txt";
         PrintStream out = new PrintStream(new File(filename));

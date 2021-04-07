@@ -3,6 +3,7 @@ package patterns;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.util.Random;
 
 /**
  *
@@ -10,8 +11,8 @@ import java.io.PrintStream;
  */
 public class PatternsVmax3 extends AbstractPatterns {
 
-    public PatternsVmax3() {
-        super();
+    public PatternsVmax3(Random random) {
+        super(random);
         sysSize = 40;
         numCars = 10;
         vmax = 3;
@@ -49,7 +50,7 @@ public class PatternsVmax3 extends AbstractPatterns {
      * @throws java.io.FileNotFoundException
      */
     public static void main(String[] args) throws FileNotFoundException {
-        PatternsVmax3 patterns = new PatternsVmax3();
+        PatternsVmax3 patterns = new PatternsVmax3(new Random(48L));
         InitialPattern[] initialPatterns = new InitialPattern[]{
             new InitialPattern("1台 初速0",
             new int[]{3, -1, -1, 0, 3, -1, -1, -1, 3, -1, -1, -1,

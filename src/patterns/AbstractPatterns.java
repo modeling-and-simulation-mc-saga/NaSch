@@ -1,6 +1,7 @@
 package patterns;
 
 import java.io.PrintStream;
+import java.util.Random;
 import model.NaSch;
 
 /**
@@ -17,9 +18,9 @@ public class AbstractPatterns {
     protected final NaSch sys;
     protected PrintStream out;
 
-    public AbstractPatterns() {
-        sys = new NaSch(sysSize, numCars, vmax, p);
-        out=System.out;
+    public AbstractPatterns(Random random) {
+        sys = new NaSch(sysSize, numCars, vmax, p, random);
+        out = System.out;
     }
 
     public void SimpleSimulation() {
@@ -36,7 +37,8 @@ public class AbstractPatterns {
         out.println(initialPattern.label);
         out.println();
         simulationWithPattern(initialPattern.s);
-    }    
+    }
+
     protected void simulationWithPattern(int[] s) {
         sys.initialize(s);
         for (int t = 0; t < tMax; t++) {

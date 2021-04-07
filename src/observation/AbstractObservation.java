@@ -2,6 +2,7 @@ package observation;
 
 import java.awt.geom.Point2D;
 import java.util.List;
+import java.util.Random;
 import model.NaSch;
 import myLib.utils.Utils;
 
@@ -15,8 +16,8 @@ public abstract class AbstractObservation {
     protected int sysSize;
     protected int numSample = 4;
 
-    public AbstractObservation(int sysSize, int vmax, double p) {
-        sys = new NaSch(sysSize, 0, vmax, p);
+    public AbstractObservation(int sysSize, int vmax, double p, Random random) {
+        sys = new NaSch(sysSize, 0, vmax, p, random);
         this.sysSize = sysSize;
     }
 
@@ -32,13 +33,13 @@ public abstract class AbstractObservation {
      * 初期化して緩和
      *
      * @param numCar 車両数
-     * @param tmax 緩和させる時間
+     * @param tRelax 緩和させる時間
      */
-    protected void initializeAndRelax(int numCar, int tmax) {
+    protected void initializeAndRelax(int numCar, int tRelax) {
         sys.setNumCar(numCar);
         sys.randomInitialize();
         //緩和
-        for (int t = 0; t < tmax; t++) {
+        for (int t = 0; t < tRelax; t++) {
             sys.update();
         }
     }
@@ -51,10 +52,10 @@ public abstract class AbstractObservation {
      * 平均量の取得
      *
      * @param dp 密度の間隔
-     * @param tmax 平均を行う時間
+     * @param tRelax 緩和を行う時間
      * @return 密度に対する平均量のリスト
      */
-    public List<Point2D.Double> calcValues(double dp, int tmax) {
+    public List<Point2D.Double> calcValues(double dp, int tRelax) {
         List<Point2D.Double> pList = Utils.createList();
         int k = (int) (1. / dp);
         pList.add(new Point2D.Double(0., 0.));
@@ -62,7 +63,7 @@ public abstract class AbstractObservation {
             double p = i * dp;//初期密度
             int numCar = (int) (sysSize * p);
             for (int j = 0; j < numSample; j++) {
-                initializeAndRelax(numCar, tmax);
+                initializeAndRelax(numCar, tRelax);
                 double value = calcValue(numCar);//平均量
                 p = (double) numCar / sysSize;//実際の密度を再計算
                 pList.add(new Point2D.Double(p, value));
