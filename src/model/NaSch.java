@@ -5,9 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import myLib.utils.Utils;
 
 /**
  * Nagel-Schreckenberg traffic flow model
@@ -34,20 +34,28 @@ public class NaSch {
     }
 
     /**
-     * 初期化：先頭から詰め込み(速度ゼロ)
+     * Initialize
      *
-     * インデクスが大きい車両ほど位置座標が大きくなければならない
+     * placing stopped cars from the top
+     *
+     * Note: cars with large indexes must be placed with large position values
      */
     public void initialize() {
-        carList = Utils.createList();
+        carList = Collections.synchronizedList(new ArrayList<>());
         for (int i = 0; i < numCars; i++) {
             int x = i;
-            carList.add(new Car(maxSpeed, decelerationProbability, x, 0, random));
+            carList.add(new Car(maxSpeed, decelerationProbability, x, 0,
+                    random));
         }
     }
 
+    /**
+     * Initialize
+     *
+     * placing stopped cars at random positions
+     */
     public void randomInitialize() {
-        carList = Utils.createList();
+        carList = Collections.synchronizedList(new ArrayList<>());
         int randomList[] = createRandomPosition(sysSize, numCars);
         Arrays.sort(randomList);
         for (int i = 0; i < randomList.length; i++) {
@@ -79,8 +87,16 @@ public class NaSch {
         return c;
     }
 
+    /**
+     * Initalize with specified speed pattern
+     *
+     * The indexes of speeds array denote positions. The values are speed of
+     * cars. For vacant cells, set negative values.
+     *
+     * @param speeds
+     */
     public void initialize(int[] speeds) {
-        carList = Utils.createList();
+        carList = Collections.synchronizedList(new ArrayList<>());
         int count = 0;
         for (int i = 0; i < Math.min(speeds.length, sysSize); i++) {
             if (speeds[i] >= 0) {
@@ -93,19 +109,25 @@ public class NaSch {
         this.numCars = count;
     }
 
+    /**
+     * Initialize homogeneous positions and speed
+     *
+     * Speed of cars are specified depending on gap.
+     */
     public void homogeneousInitialize() {
-        carList = Utils.createList();
+        carList = Collections.synchronizedList(new ArrayList<>());
         int s = (int) ((double) sysSize / numCars);
         for (int i = 0; i < numCars; i++) {
             int x = i * s;
-            Car car = new Car(maxSpeed, decelerationProbability, x, s, random);
+            Car car = new Car(maxSpeed, decelerationProbability, x, s, 
+                    random);
             carList.add(car);
         }
     }
 
     public void update() {
         for (int i = 0; i < numCars; i++) {
-            int j = (i + 1) % numCars;//先行車両はインデクスが大きい方
+            int j = (i + 1) % numCars;//the preceding car has larger index
             int headway = carList.get(j).getPosition()
                     - carList.get(i).getPosition();
             headway = (headway + sysSize) % sysSize;
@@ -115,7 +137,7 @@ public class NaSch {
     }
 
     /**
-     * 平均速度
+     * average speed
      *
      * @return
      */
@@ -130,7 +152,7 @@ public class NaSch {
     }
 
     public List<Integer> getPositions() {
-        List<Integer> list = Utils.createList();
+        List<Integer> list = Collections.synchronizedList(new ArrayList<>());
         carList.stream().forEach((car) -> {
             list.add(car.getPosition());
         });
@@ -138,7 +160,7 @@ public class NaSch {
     }
 
     public List<Integer> getSpeeds() {
-        List<Integer> list = Utils.createList();
+        List<Integer> list = Collections.synchronizedList(new ArrayList<>());
         carList.stream().forEach((car) -> {
             list.add(car.getSpeed());
         });
@@ -182,6 +204,7 @@ public class NaSch {
 
     /**
      * @param args the command line arguments
+     * @throws java.io.FileNotFoundException
      */
     public static void main(String[] args) throws FileNotFoundException {
         int tMax = 100;
